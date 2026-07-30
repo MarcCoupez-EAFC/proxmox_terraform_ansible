@@ -1,0 +1,7 @@
+# Adresse du serveur cible
+server_adress = ""
+
+
+# TOKEN de l'API proxmox
+
+api_token = ""
