@@ -1,0 +1,13 @@
+
+- name: Supprimer l'utilisateur admin sur tous les LXC
+  hosts: proxmox_all_lxc
+  become: true
+  vars:
+    ansible_user: root
+
+  tasks:
+    - name: Supprimer l'utilisateur et son home
+      ansible.builtin.user:
+        name: admin
+        state: absent
+        remove: true   # supprime aussi le répertoire home et le mailbo

@@ -1,5 +1,7 @@
 terraform {
+  required_version = ">=1.15.8"
   required_providers {
+    
     proxmox = {
         source = "bpg/proxmox"
         version = "0.111.1"
@@ -21,7 +23,7 @@ resource "proxmox_virtual_environment_container" "this" {
     }
     user_account {
       password = "password"
-      keys = [file("~/.ssh/id_ed25519.pub")]
+      keys = [file("${var.ssh_public_key_path}")]
     }
     
   
@@ -49,3 +51,4 @@ resource "proxmox_virtual_environment_container" "this" {
   tags = var.tags
   
 }
+

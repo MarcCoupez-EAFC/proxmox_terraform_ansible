@@ -4,7 +4,7 @@ variable "server_adress" {
     description = "Adresse  du serveur cible"
 }
 
-variable api_token {
+variable "api_token" {
     type = string
     description = "Token de l'API proxmox"
 }
