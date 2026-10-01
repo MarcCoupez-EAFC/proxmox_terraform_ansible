@@ -1,9 +1,54 @@
 #SPDX-License-Identifier: MIT-0
 ---
+
+# S'assurer d'avoir sudo pour la suite (impossible de se connecter à l'utilisateur sinon)
+- name : installer sudo 
+  ansible.builtin.apt:
+    name : sudo
+
+
+
+
 # tasks file for ansible/roles/postgresql
 
 - name: installer postgresql
   ansible.builtin.apt:
-    name : postgresql
+    name : 
+      - postgresql-{{postgresql_version}}
+      - postgresql-contrib
+      - python3-psycopg2
     state : present
     update_cache: yes
+
+# Utilisation du module community.postgresql pour  configurer les db : adresses et ports d'écoutes , utilisateurs
+
+
+- name : changer les adresses d'écoutes
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_alter_system :
+    param : listen_addresses
+    value : "{{postgresql_listen_addresses}}"
+    login_db : postgres
+    login_password: postgres
+  notify: Reload PostgreSQL
+
+
+  # Configuration des réseaux autorisés 
+- name: Autoriser le réseau local à accéder à PostgreSQL
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_pg_hba:
+    dest: /etc/postgresql/{{postgresql_version}}/main/pg_hba.conf
+    contype: host
+    databases: all
+    users: all
+    source: 192.168.0.0/24
+    method: scram-sha-256
+  notify: Reload PostgreSQL
+
+# - name : redemarrer le système si nécessaire
+#   ansible.builtin.service:
+#     name: postgresql
+#     state: restarted
+#   when: postgresql_conf.restart_required

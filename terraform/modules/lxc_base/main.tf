@@ -42,6 +42,7 @@ resource "proxmox_virtual_environment_container" "this" {
     name   = var.bridge.name
     bridge = var.bridge.bridge
     vlan_id = var.vlan_tag
+    firewall = true
   }
 
   operating_system {
@@ -51,4 +52,13 @@ resource "proxmox_virtual_environment_container" "this" {
   tags = var.tags
   
 }
+# resource "proxmox_virtual_environment_firewall_options" "this" {
+ # depends_on = [proxmox_virtual_environment_container.this]
 
+  #node_name    = var.node
+  #container_id = proxmox_virtual_environment_container.this.vm_id
+
+  #enabled       = true
+  #input_policy  = "ACCEPT"     # ou "ACCEPT" selon ton besoin
+  #output_policy = "ACCEPT"
+#}

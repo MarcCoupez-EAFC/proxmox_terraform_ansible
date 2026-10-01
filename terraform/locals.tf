@@ -8,7 +8,7 @@ locals {
                 espace = 8
             }
             OS = "debian"
-            vlan_tag = null
+            vlan_tag = 30
             template = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
             tags = ["api"]
         }
@@ -20,7 +20,7 @@ locals {
                     espace = 8
                 }
                 OS = "debian"
-                vlan_tag = null
+                vlan_tag = 30
                 template = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
                 tags = ["api"]
         }
@@ -31,7 +31,7 @@ locals {
                     espace = 8
                 }
                 OS = "debian"
-                vlan_tag = null
+                vlan_tag = 20
                 template = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
                 tags = ["monitoring"]
         }
@@ -42,7 +42,7 @@ locals {
                     espace = 8
                 }
                 OS = "debian"
-                vlan_tag = null
+                vlan_tag = 20
                 template = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
                 tags = ["monitoring"]
         }
@@ -53,7 +53,7 @@ locals {
                     espace = 8
                 }
                 OS = "debian"
-                vlan_tag = null
+                vlan_tag = 40
                 template = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
                 tags = ["vault"]
         }
@@ -65,7 +65,7 @@ locals {
                     espace = 8
                 }
                 OS = "debian"
-                vlan_tag = null
+                vlan_tag = 40
                 template = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
                 tags = ["vault"]
         }
@@ -94,4 +94,12 @@ locals {
         
 
     }
+    vlans = {
+        monitoring = "192.168.20.0/24"
+        api = "192.168.30.0/24"
+    }
+    vlan_names = keys(local.vlans)
+    
+
+   
 }

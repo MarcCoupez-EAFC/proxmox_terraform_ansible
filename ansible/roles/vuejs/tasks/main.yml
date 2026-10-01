@@ -1,0 +1,19 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for ansible/roles/vuejs
+
+- name : Installer npm
+  ansible.builtin.apt : 
+    name :
+      - npm
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+
+
+- name: Installer Vue CLI
+  community.general.npm:
+    name: "@vue/cli"
+    global: true
+    state: present

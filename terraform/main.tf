@@ -30,14 +30,3 @@ module "lxc" {
   tags = each.value.tags
 }
 
-module "user" {
-  source = "./modules/accounts/"
-}
-
-resource "proxmox_acl" "terraform_vm_access" {
-  path= "/"
-  role_id = "Terraform"
-  token_id = "terraform-pve@pve!provider"
-  propagate   = true
-}
-

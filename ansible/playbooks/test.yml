@@ -1,0 +1,11 @@
+
+
+- name: Installer vuejs
+  hosts : proxmox_pve_lxc
+  become : true
+  vars :
+    ansible_user : root
+  roles :
+    - role : vuejs
+      when : inventory_hostname == "debian-api-frontend"
+

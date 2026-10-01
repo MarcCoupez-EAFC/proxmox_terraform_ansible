@@ -1,3 +1,8 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # defaults file for ansible/roles/postgresql
+# Version postgresql utilisée
+postgresql_version : "15"
+
+# Adresse d'écoute postgresql (pour y accéder depuis le reseau) , correspond à l'IP du LXC
+postgresql_listen_addresses : "127.0.0.1"
