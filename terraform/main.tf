@@ -28,5 +28,6 @@ module "lxc" {
   vlan_tag = each.value.vlan_tag
   template = each.value.template
   tags = each.value.tags
-}
+  
+} 
 

@@ -1,13 +1,34 @@
 
-- name: Supprimer l'utilisateur admin sur tous les LXC
+- name: Installer sudo
   hosts: proxmox_all_lxc
-  become: true
-  vars:
-    ansible_user: root
-
+  become : true
   tasks:
-    - name: Supprimer l'utilisateur et son home
-      ansible.builtin.user:
-        name: admin
-        state: absent
-        remove: true   # supprime aussi le répertoire home et le mailbo
+    - name: Installer sudo
+      ansible.builtin.apt:
+        name: sudo
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+- name: Créer l'utilisateur admin
+  hosts: proxmox_all_lxc
+  become : true
+  tasks : 
+  - name : créer l'admin
+    ansible.builtin.user:
+      name: admin
+      groups: sudo
+      append: true
+      shell: /bin/bash
+      password: "{{ password | password_hash('sha512', hash) }}"
+      create_home: true
+
+- name: Déposer la clé SSH publique
+  hosts: proxmox_all_lxc
+  become : true
+  tasks : 
+    - name : créer la ssh
+      ansible.posix.authorized_key:
+        user: admin
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"

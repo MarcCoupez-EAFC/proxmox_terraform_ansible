@@ -22,7 +22,6 @@ resource "proxmox_virtual_environment_container" "this" {
       }
     }
     user_account {
-      password = "password"
       keys = [file("${var.ssh_public_key_path}")]
     }
     
