@@ -1,7 +1,7 @@
 locals {
   // Plan d'adressage : un sous-réseau par VLAN
   vlans = {
-    10 = "192.168.1.0/24" # Admin
+    1 = "192.168.1.0/24" # Admin
     20 = "192.168.20.0/24" # Monitoring
     30 = "192.168.30.0/24" # API
     40 = "192.168.40.0/24" # Vault
@@ -25,9 +25,9 @@ locals {
     cpu_cores = 2
   }
 
-  // Uniquement ce qui est propre à chaque machine
+  // Uniquement ce qui est propre à chaque machine + les règles firewall qui vont s'appliquer
   lxc_specific = {
-    debian-api-backend  = { vlan_tag = 30, host = 10, tags = ["api"] }
+    debian-api-backend  = { vlan_tag = 30, host = 10, tags = ["api"]}
     debian-api-frontend = { vlan_tag = 30, host = 11, tags = ["api"] }
     debian-grafana      = { vlan_tag = 20, host = 10, tags = ["monitoring"] }
     debian-prometheus   = { vlan_tag = 20, host = 11, tags = ["monitoring"] }

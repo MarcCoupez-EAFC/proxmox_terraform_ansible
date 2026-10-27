@@ -21,6 +21,29 @@ locals {
     for name, cfg in local.lxc_config :
     name => cidrhost(local.vlans[cfg.vlan_tag], cfg.host)
   }
+
+  vlan_names = { 1 = "admin",20 = "monitoring", 30 = "api", 40 = "vault", 50 = "dev"
+  55 = "git", 60 = "prod", 70 = "users", 80 = "dmz", 90 = "backup"
+  }
+}
+
+module "firewall" {
+  source = "./modules/firewall"
+
+  enabled          = var.firewall_enabled
+  admin_cidr       = local.vlans[1]
+  management_cidrs = var.management_cidrs
+
+  vlans = {
+    for tag, cidr in local.vlans : tag => { name = local.vlan_names[tag], cidr = cidr }
+  }
+
+  security_groups = {
+    ssh-admin = {
+      comment = "SSH depuis le VLAN admin"
+      rules   = [{ dport = "22", source = local.vlans[1], comment = "SSH admin" }]
+    }
+  }
 }
 
 module "lxc" {
