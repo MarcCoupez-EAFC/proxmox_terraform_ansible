@@ -1,7 +1,7 @@
 locals {
   // Plan d'adressage : un sous-réseau par VLAN
   vlans = {
-    10 = "192.168.10.0/24" # Admin
+    10 = "192.168.1.0/24" # Admin
     20 = "192.168.20.0/24" # Monitoring
     30 = "192.168.30.0/24" # API
     40 = "192.168.40.0/24" # Vault
