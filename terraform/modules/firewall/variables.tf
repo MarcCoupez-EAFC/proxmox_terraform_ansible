@@ -1,12 +1,12 @@
 variable "enabled" {
   type        = bool
-  description = "Active le firewall du datacenter. Laisser à false tant que l'accès admin n'est pas vérifié."
+  description = "Interrupteur général du firewall datacenter. false = AUCUNE règle n'est appliquée nulle part (node, LXC, VM)."
   default     = false
 }
 
 variable "input_policy" {
   type        = string
-  description = "Politique par défaut du trafic entrant"
+  description = "Politique par défaut du trafic entrant (niveau datacenter)"
   default     = "DROP"
 
   validation {
@@ -17,7 +17,7 @@ variable "input_policy" {
 
 variable "output_policy" {
   type        = string
-  description = "Politique par défaut du trafic sortant"
+  description = "Politique par défaut du trafic sortant (niveau datacenter)"
   default     = "ACCEPT"
 
   validation {
@@ -28,16 +28,19 @@ variable "output_policy" {
 
 variable "management_cidrs" {
   type        = list(string)
-  description = "Réseaux autorisés à administrer Proxmox"
+  description = "Réseaux autorisés à administrer Proxmox (alimente l'ipset spécial 'management')"
+  default     = []
 
+  # Bloquant UNIQUEMENT si on active le firewall : avant, une liste vide est acceptable.
+  # (Validation croisée entre variables : Terraform >= 1.9)
   validation {
-    condition     = length(var.management_cidrs) > 0
-    error_message = "Au moins un réseau d'administration est requis, sinon le firewall coupera tout accès."
+    condition     = !var.enabled || length(var.management_cidrs) > 0
+    error_message = "Firewall activé sans réseau d'administration : tu vas te couper l'accès à Proxmox."
   }
 
   validation {
     condition     = alltrue([for c in var.management_cidrs : can(cidrhost(c, 0))])
-    error_message = "Chaque entrée doit être une notation CIDR (ex : 192.168.1.0/24)."
+    error_message = "Chaque entrée doit être une notation CIDR (ex : 192.168.10.0/24)."
   }
 }
 
@@ -46,7 +49,7 @@ variable "vlans" {
     name = string
     cidr = string
   }))
-  description = "VLAN à déclarer comme alias (clé = tag VLAN), utilisables ensuite dans les règles"
+  description = "VLAN déclarés comme alias 'vlan_<name>' (clé = tag VLAN), utilisables dans source/dest"
   default     = {}
 
   validation {
@@ -73,7 +76,7 @@ variable "security_groups" {
       comment = optional(string, "")
     }))
   }))
-  description = "Groupes de règles réutilisables (clé = nom du groupe)"
+  description = "Groupes de règles réutilisables (clé = nom du groupe), à référencer depuis les LXC"
   default     = {}
 
   validation {
@@ -85,31 +88,72 @@ variable "security_groups" {
     error_message = "type doit valoir in/out et action ACCEPT/DROP/REJECT."
   }
 
+  # Une règle entrante SANS source = "depuis n'importe où" : même danger que 0.0.0.0/0
   validation {
     condition = alltrue(flatten([
-      for sg in values(var.security_groups) : [for r in sg.rules : r.source != "0.0.0.0/0"]
+      for sg in values(var.security_groups) : [
+        for r in sg.rules : r.type != "in" || (r.source != null && r.source != "0.0.0.0/0")
+      ]
     ]))
-    error_message = "Une règle ouverte à tout Internet (0.0.0.0/0) est interdite."
+    error_message = "Toute règle entrante doit avoir une source explicite, différente de 0.0.0.0/0."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for sg in values(var.security_groups) : [
+        for r in sg.rules : r.dport == null || contains(["tcp", "udp"], r.proto)
+      ]
+    ]))
+    error_message = "dport n'a de sens qu'avec proto = tcp ou udp (pas icmp)."
+  }
+
+  # Formats acceptés : "22", "80,443", "5900:5999", "80,8000:8010"
+  validation {
+    condition = alltrue(flatten([
+      for sg in values(var.security_groups) : [
+        for r in sg.rules : r.dport == null || can(regex("^[0-9]+(:[0-9]+)?(,[0-9]+(:[0-9]+)?)*$", r.dport))
+      ]
+    ]))
+    error_message = "dport invalide. Formats : \"22\", \"80,443\" ou \"5900:5999\"."
   }
 }
 
-variable "fw_rules" {
-
+variable "node_rules" {
   type = list(object({
-    action  = string                       # obligatoire : ACCEPT / DROP / REJECT
+    action  = string
     type    = optional(string, "in")
-    iface   = optional(string)             # null = toutes les interfaces
+    iface   = optional(string)
     proto   = optional(string, "tcp")
     dport   = optional(string)
     source  = optional(string)
     dest    = optional(string)
     comment = optional(string, "")
   }))
+  description = "Règles appliquées à l'hôte Proxmox lui-même (GUI, ping...)"
+  default     = []
+
+  validation {
+    condition     = alltrue([for r in var.node_rules : contains(["in", "out"], r.type) && contains(["ACCEPT", "DROP", "REJECT"], r.action)])
+    error_message = "type doit valoir in/out et action ACCEPT/DROP/REJECT."
+  }
+
+  validation {
+    condition     = alltrue([for r in var.node_rules : r.type != "in" || (r.source != null && r.source != "0.0.0.0/0")])
+    error_message = "Toute règle entrante du node doit avoir une source explicite, différente de 0.0.0.0/0."
+  }
+
+  validation {
+    condition     = alltrue([for r in var.node_rules : r.dport == null || contains(["tcp", "udp"], r.proto)])
+    error_message = "dport n'a de sens qu'avec proto = tcp ou udp (pas icmp)."
+  }
+
+  validation {
+    condition     = alltrue([for r in var.node_rules : r.dport == null || can(regex("^[0-9]+(:[0-9]+)?(,[0-9]+(:[0-9]+)?)*$", r.dport))])
+    error_message = "dport invalide. Formats : \"22\", \"80,443\" ou \"5900:5999\"."
+  }
 }
 
 variable "node_name" {
-
-  type = string
+  type    = string
   default = "pve"
 }
-

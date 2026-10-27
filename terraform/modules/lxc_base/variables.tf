@@ -91,3 +91,54 @@ variable "dns_servers" {
   description = "Serveurs DNS du LXC"
   default     = []
 }
+
+
+# --- Firewall ----------------------------------------------------------------
+
+variable "security_groups" {
+  type        = list(string)
+  description = "Security groups (définis au niveau datacenter) appliqués à ce conteneur"
+
+  validation {
+    condition     = length(var.security_groups) > 0
+    error_message = "Un LXC sans security group est injoignable (input DROP), Ansible compris. Ajoute au moins ssh-admin."
+  }
+
+  validation {
+    condition     = length(var.security_groups) == length(distinct(var.security_groups))
+    error_message = "Un même security group est listé plusieurs fois."
+  }
+}
+
+variable "firewall_input_policy" {
+  type        = string
+  description = "Politique par défaut du trafic entrant du conteneur"
+  default     = "DROP"
+
+  validation {
+    condition     = contains(["ACCEPT", "DROP", "REJECT"], var.firewall_input_policy)
+    error_message = "firewall_input_policy doit valoir ACCEPT, DROP ou REJECT."
+  }
+}
+
+variable "firewall_output_policy" {
+  type        = string
+  description = "Politique par défaut du trafic sortant du conteneur"
+  default     = "ACCEPT"
+
+  validation {
+    condition     = contains(["ACCEPT", "DROP", "REJECT"], var.firewall_output_policy)
+    error_message = "firewall_output_policy doit valoir ACCEPT, DROP ou REJECT."
+  }
+}
+
+variable "firewall_log_level_in" {
+  type        = string
+  description = "Niveau de log du trafic entrant ('info' pour déboguer un flux bloqué)"
+  default     = "nolog"
+
+  validation {
+    condition     = contains(["nolog", "emerg", "alert", "crit", "err", "warning", "notice", "info", "debug"], var.firewall_log_level_in)
+    error_message = "Niveau de log invalide."
+  }
+}
