@@ -22,6 +22,7 @@ locals {
       localisation = "local-lvm"
       espace       = 8
     }
+    cpu_cores = 2
   }
 
   // Uniquement ce qui est propre à chaque machine

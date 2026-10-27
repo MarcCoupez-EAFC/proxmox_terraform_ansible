@@ -80,3 +80,14 @@ variable "ssh_public_key_path" {
   default = "~/.ssh/id_ed25519.pub"
 }
 
+variable "cpu_cores" {
+
+    type = number
+    default = 2
+}
+
+variable "dns_servers" {
+  type        = list(string)
+  description = "Serveurs DNS du LXC"
+  default     = []
+}

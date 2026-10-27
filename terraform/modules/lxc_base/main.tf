@@ -12,6 +12,9 @@ terraform {
 resource "proxmox_virtual_environment_container" "this" {
   node_name    = var.node
   unprivileged = true
+  start_on_boot = true   #Redémarre automatiquement lorsque le sreveur est redémarré
+  started       = true
+  tags = var.tags
   
   initialization {
     hostname = var.name
@@ -25,7 +28,12 @@ resource "proxmox_virtual_environment_container" "this" {
     user_account {
       keys = [file("${var.ssh_public_key_path}")]
     }
-    
+    dynamic "dns" {
+    for_each = length(var.dns_servers) > 0 ? [1] : []
+    content {
+      servers = var.dns_servers
+    }
+  }
   
   }
   
@@ -37,6 +45,9 @@ resource "proxmox_virtual_environment_container" "this" {
   memory {
     dedicated = var.RAM
   }
+  cpu {
+    cores = var.cpu_cores
+  }
 
   network_interface {
     name   = var.bridge.name
@@ -45,11 +56,14 @@ resource "proxmox_virtual_environment_container" "this" {
     firewall = true
   }
 
+  
+
   operating_system {
     template_file_id = var.template
     type             = var.OS
   }
-  tags = var.tags
+  
+# !!! Anticiper si le template change
   lifecycle {
     ignore_changes = [operating_system[0].template_file_id]
   }
@@ -63,3 +77,4 @@ resource "proxmox_virtual_environment_firewall_options" "this" {
   output_policy = "ACCEPT"
   ipfilter      = true
 }
+

@@ -38,10 +38,11 @@ module "lxc" {
   disk     = each.value.disk
   OS       = each.value.OS
   template = each.value.template
-
+  cpu_cores = each.value.cpu_cores
   // Réseau
   vlan_tag    = each.value.vlan_tag
   ip_lxc      = "${local.lxc_ips[each.key]}/24"
   gateway     = cidrhost(local.vlans[each.value.vlan_tag], 1)
+  dns_servers = [local.lxc_ips["debian-dns"]]
 
 }
