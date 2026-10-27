@@ -1,2 +1,1 @@
 ansible_user : "{{ lookup('env','ANSIBLE_USER') }}"
-ansible_become_password : password

@@ -9,11 +9,25 @@ variable "OS" {
 }
 
 variable "ip_lxc" {
-    type = string
-    description = "IP attribué à la machine, dhcp par défaut"
-    default = "dhcp"
+  type        = string
+  description = "IP du LXC en notation CIDR (ex : 192.168.30.10/24), ou \"dhcp\""
+
+  validation {
+    condition     = var.ip_lxc == "dhcp" || can(cidrhost(var.ip_lxc, 0))
+    error_message = "ip_lxc doit valoir \"dhcp\" ou une IP CIDR (ex : 192.168.30.10/24)."
+  }
 }
 
+variable "gateway" {
+  type        = string
+  description = "Passerelle par défaut du LXC (interface du firewall dans le VLAN). Obligatoire si l'IP est statique."
+  default     = null
+
+  validation {
+    condition     = var.ip_lxc == "dhcp" || var.gateway != null
+    error_message = "Une IP statique nécessite une passerelle."
+  }
+}
 variable "template" {
     type = string
     description = "Chemin vers le template utilisé"

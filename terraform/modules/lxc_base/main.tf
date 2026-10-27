@@ -19,6 +19,7 @@ resource "proxmox_virtual_environment_container" "this" {
     ip_config {
       ipv4 {
         address = var.ip_lxc
+        gateway = var.gateway
       }
     }
     user_account {
@@ -49,15 +50,16 @@ resource "proxmox_virtual_environment_container" "this" {
     type             = var.OS
   }
   tags = var.tags
-  
+  lifecycle {
+    ignore_changes = [operating_system[0].template_file_id]
+  }
 }
-# resource "proxmox_virtual_environment_firewall_options" "this" {
- # depends_on = [proxmox_virtual_environment_container.this]
+resource "proxmox_virtual_environment_firewall_options" "this" {
+  node_name    = var.node
+  container_id = proxmox_virtual_environment_container.this.vm_id
 
-  #node_name    = var.node
-  #container_id = proxmox_virtual_environment_container.this.vm_id
-
-  #enabled       = true
-  #input_policy  = "ACCEPT"     # ou "ACCEPT" selon ton besoin
-  #output_policy = "ACCEPT"
-#}
+  enabled       = true
+  input_policy  = "DROP"
+  output_policy = "ACCEPT"
+  ipfilter      = true
+}
