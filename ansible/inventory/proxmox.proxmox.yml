@@ -1,0 +1,13 @@
+plugin: community.proxmox.proxmox
+url : "{{ lookup('env','PROXMOX_URL') }}"
+token_id : "{{ lookup('env','PROXMOX_API_ID') }}"
+token_secret : "{{ lookup('env','PROXMOX_API_SECRET') }}"
+user : "{{ lookup('env','PROXMOX_API_USER') }}"
+validate_certs: false
+want_facts: true
+
+
+want_proxmox_nodes_ansible_host: false
+
+compose:
+  ansible_host: proxmox_lxc_interfaces | selectattr('name', 'equalto', 'eth0') | map(attribute='inet')   | first | split('/') | first

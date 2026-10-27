@@ -1,0 +1,9 @@
+
+
+- name: Installer vuejs
+  hosts : proxmox_pve_lxc
+  become : true
+  roles :
+    - role : vuejs
+      when : inventory_hostname == "debian-api-frontend"
+

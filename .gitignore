@@ -49,3 +49,5 @@ terraform.rc
 *.cfg
 *.ini
 proxmox_auth.yml
+passwords.txt
+.env

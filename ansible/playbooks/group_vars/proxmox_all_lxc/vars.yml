@@ -1,0 +1,2 @@
+password: "{{PASSWORD}}"
+hash: "{{PASSWORD_HASH}}"

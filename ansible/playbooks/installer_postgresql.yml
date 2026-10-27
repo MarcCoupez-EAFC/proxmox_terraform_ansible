@@ -1,0 +1,9 @@
+- name: Installer postgresql
+  hosts : proxmox_pve_lxc
+  become : true
+  vars :
+    ansible_user : root
+  roles :
+    - role : postgresql
+      when : inventory_hostname == "debian-postresql"
+
