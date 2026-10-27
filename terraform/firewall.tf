@@ -20,9 +20,20 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "ssh_admi
 }
 
 resource "proxmox_virtual_environment_cluster_firewall" "this" {
-  enabled       = false   # ← volontairement, pour l'instant
+  enabled       = true   # ← volontairement, pour l'instant
   input_policy  = "DROP"
   output_policy = "ACCEPT"
 
   depends_on = [proxmox_virtual_environment_firewall_ipset.management]
+}
+
+resource "proxmox_virtual_environment_node_firewall" "this" {
+  node_name = "pve"   # nom de ton nœud
+  enabled   = false
+
+  # options facultatives
+  log_level_in  = "nolog"
+  log_level_out = "nolog"
+  # ndp       = true
+  # nosmurfs  = true
 }

@@ -1,16 +1,4 @@
 terraform {
-  required_version = ">=1.15.8"
-  required_providers {
-    
-    proxmox = {
-        source = "bpg/proxmox"
-        version = ">=0.111.1"
-    }
-  }
-}
-
-
-terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
@@ -31,7 +19,7 @@ resource "proxmox_virtual_environment_firewall_ipset" "management" {
   comment = "Réseaux autorisés à administrer Proxmox"
 
   dynamic "cidr" {
-    for_each = concat([var.admin_cidr], var.management_cidrs)
+    for_each = var.management_cidrs
     content {
       name = cidr.value
     }
@@ -67,4 +55,32 @@ resource "proxmox_virtual_environment_cluster_firewall" "this" {
     proxmox_virtual_environment_firewall_ipset.management,
     proxmox_virtual_environment_cluster_firewall_security_group.this,
   ]
+}
+
+resource "proxmox_virtual_environment_firewall_rules" "node" {
+  node_name = var.node_name
+
+  dynamic "rule" {
+    for_each = var.fw_rules
+    content {
+      action  = rule.value.action
+      type    = rule.value.type
+      iface   = rule.value.iface
+      proto   = rule.value.proto
+      dport   = rule.value.dport
+      source  = rule.value.source
+      dest    = rule.value.dest
+      comment = rule.value.comment
+    }
+  }
+}
+
+resource "proxmox_virtual_environment_cluster_firewall" "this" {
+  count = var.enabled ? 1 : 0
+
+  enabled       = true
+  input_policy  = "DROP"
+  output_policy = "ACCEPT"
+
+  depends_on = [proxmox_virtual_environment_firewall_rules.node]
 }

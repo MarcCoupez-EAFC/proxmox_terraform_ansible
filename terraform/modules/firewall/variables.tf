@@ -26,24 +26,18 @@ variable "output_policy" {
   }
 }
 
-variable "admin_cidr" {
-  type        = string
-  description = "Réseau du VLAN admin, toujours autorisé à administrer Proxmox (ex : 192.168.10.0/24)"
-
-  validation {
-    condition     = can(cidrhost(var.admin_cidr, 0))
-    error_message = "admin_cidr doit être en notation CIDR."
-  }
-}
-
 variable "management_cidrs" {
   type        = list(string)
-  description = "Réseaux supplémentaires autorisés à administrer Proxmox (ex : ton poste en /32, temporairement)"
-  default     = []
+  description = "Réseaux autorisés à administrer Proxmox"
+
+  validation {
+    condition     = length(var.management_cidrs) > 0
+    error_message = "Au moins un réseau d'administration est requis, sinon le firewall coupera tout accès."
+  }
 
   validation {
     condition     = alltrue([for c in var.management_cidrs : can(cidrhost(c, 0))])
-    error_message = "Chaque entrée doit être en notation CIDR, ex : 10.0.0.42/32."
+    error_message = "Chaque entrée doit être une notation CIDR (ex : 192.168.1.0/24)."
   }
 }
 
@@ -98,3 +92,24 @@ variable "security_groups" {
     error_message = "Une règle ouverte à tout Internet (0.0.0.0/0) est interdite."
   }
 }
+
+variable "fw_rules" {
+
+  type = list(object({
+    action  = string                       # obligatoire : ACCEPT / DROP / REJECT
+    type    = optional(string, "in")
+    iface   = optional(string)             # null = toutes les interfaces
+    proto   = optional(string, "tcp")
+    dport   = optional(string)
+    source  = optional(string)
+    dest    = optional(string)
+    comment = optional(string, "")
+  }))
+}
+
+variable "node_name" {
+
+  type = string
+  default = "pve"
+}
+

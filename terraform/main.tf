@@ -31,7 +31,6 @@ module "firewall" {
   source = "./modules/firewall"
 
   enabled          = var.firewall_enabled
-  admin_cidr       = local.vlans[1]
   management_cidrs = var.management_cidrs
 
   vlans = {
@@ -44,6 +43,11 @@ module "firewall" {
       rules   = [{ dport = "22", source = local.vlans[1], comment = "SSH admin" }]
     }
   }
+  fw_rules = [
+  { action = "ACCEPT", dport = "8006", source = "+management_cidrs", comment = "GUI Proxmox" },
+  { action = "ACCEPT", dport = "22",   source = "+management_cidrs", comment = "SSH admin" },
+  { action = "ACCEPT", proto = "icmp", source = "+management_cidrs", comment = "Ping" },
+]
 }
 
 module "lxc" {
@@ -57,9 +61,9 @@ module "lxc" {
 
 
   // Ressources
-  RAM      = each.value.RAM
+  ram      = each.value.ram
   disk     = each.value.disk
-  OS       = each.value.OS
+  os      = each.value.os
   template = each.value.template
   cpu_cores = each.value.cpu_cores
   // Réseau
@@ -69,3 +73,4 @@ module "lxc" {
   dns_servers = [local.lxc_ips["debian-dns"]]
 
 }
+

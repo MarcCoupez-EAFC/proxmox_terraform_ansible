@@ -3,7 +3,7 @@ variable "node" {
     description = "Node"
     default = "pve"
 }
-variable "OS" {
+variable "os" {
   type = string
   description = "Systeme d'exploitation du LXC"
 }
@@ -39,7 +39,7 @@ variable "name" {
 }
 
 
-variable "RAM" {
+variable "ram" {
     type = number
     description = "Nombre de RAM en Mb"
 }

@@ -15,8 +15,8 @@ locals {
 
   // Valeurs communes à tous les LXC d'infra
   lxc_defaults = {
-    RAM      = 2048
-    OS       = "debian"
+    ram      = 2048
+    os      = "debian"
     template = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
     disk = {
       localisation = "local-lvm"

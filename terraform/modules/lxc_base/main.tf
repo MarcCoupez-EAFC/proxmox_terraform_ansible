@@ -43,7 +43,7 @@ resource "proxmox_virtual_environment_container" "this" {
     size         = var.disk.espace
   }
   memory {
-    dedicated = var.RAM
+    dedicated = var.ram
   }
   cpu {
     cores = var.cpu_cores
@@ -60,7 +60,7 @@ resource "proxmox_virtual_environment_container" "this" {
 
   operating_system {
     template_file_id = var.template
-    type             = var.OS
+    type             = var.os
   }
   
 # !!! Anticiper si le template change
