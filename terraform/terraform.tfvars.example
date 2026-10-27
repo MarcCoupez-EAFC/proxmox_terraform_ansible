@@ -5,3 +5,7 @@ server_adress = ""
 # TOKEN de l'API proxmox
 
 api_token = ""
+
+# IPs du management, autorisées pour les firewall
+
+management_cidrs = []
